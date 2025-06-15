@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Meus Filmes Vistos</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>🎬 Meus Filmes Vistos</h1>
+
+      <div id="search-container">
+        <h2>Buscar Filme na Internet</h2>
+        <form id="form-busca">
+          <input
+            type="text"
+            id="input-busca"
+            placeholder="Digite o nome de um filme..."
+            required
+          />
+          <button type="submit">Buscar</button>
+        </form>
+        <div id="search-results"></div>
+      </div>
+
+      <div id="add-container">
+        <h2>Adicionar à Minha Lista</h2>
+        <form id="form-filme">
+          <input
+            type="text"
+            id="input-titulo"
+            placeholder="Título do filme"
+            readonly
+          />
+
+          <input type="hidden" id="input-poster" />
+
+          <div class="rating-container">
+            <label>Sua nota:</label>
+            <div class="rating-input">
+              <span class="star" data-value="1">☆</span>
+              <span class="star" data-value="2">☆</span>
+              <span class="star" data-value="3">☆</span>
+              <span class="star" data-value="4">☆</span>
+              <span class="star" data-value="5">☆</span>
+            </div>
+            <input type="hidden" id="input-rating" value="0" />
+          </div>
+
+          <textarea
+            id="input-detalhes"
+            placeholder="Seus comentários sobre o filme..."
+            rows="3"
+          ></textarea>
+          <button type="submit" id="btn-add-movie">Adicionar Filme</button>
+        </form>
+      </div>
+
+      <ul id="lista-filmes" class="lista-filmes"></ul>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
