@@ -319,3 +319,56 @@ h1 {
 .btn-remover {
   width: 100px;
 }
+/* --- ESTILOS RESPONSIVOS (PARA CELULARES) --- */
+/* Estas regras serão aplicadas apenas em telas com largura máxima de 768px */
+
+@media (max-width: 768px) {
+  /* Ajusta o container principal para ter menos espaço nas laterais */
+  .container {
+    padding: 15px;
+  }
+
+  /* Diminui um pouco o tamanho do título principal */
+  h1 {
+    font-size: 1.8em;
+  }
+
+  /* A MUDANÇA MAIS IMPORTANTE: O layout do item do filme */
+  .filme-item {
+    /* Muda a direção do flexbox de linha (row) para coluna (column) */
+    flex-direction: column;
+    /* Centraliza os itens empilhados */
+    align-items: center;
+    gap: 15px; /* Ajusta o espaçamento para o layout vertical */
+  }
+
+  /* O pôster agora não precisa de encolhimento e pode ter uma margem */
+  .filme-poster {
+    width: 150px; /* Um pouco maior para ter mais destaque */
+    height: 225px;
+  }
+
+  /* Centraliza todo o texto dentro da área de informações */
+  .filme-info {
+    text-align: center;
+    width: 100%; /* Garante que o texto possa se centralizar corretamente */
+  }
+
+  /* Organiza os botões de ação lado a lado no celular */
+  .actions-container {
+    flex-direction: row;
+    justify-content: center;
+    gap: 15px;
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  .btn-editar,
+  .btn-remover,
+  .btn-salvar,
+  .btn-cancelar {
+    /* Faz os botões crescerem para ocupar o espaço disponível */
+    flex-grow: 1;
+    max-width: 150px; /* Limita o tamanho máximo dos botões */
+  }
+}
