@@ -1,65 +1,52 @@
 document.addEventListener("DOMContentLoaded", async () => {
-  // --- 1. CONFIGURAÇÃO DO SUPABASE ---
-  // Substitua pelos seus dados do Supabase que você copiou!
   const SUPABASE_URL = "https://faaajfbntirczxdukyxa.supabase.co";
   const SUPABASE_ANON_KEY =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZhYWFqZmJudGlyY3p4ZHVreXhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAwMjA1MTYsImV4cCI6MjA2NTU5NjUxNn0.bBOH_R_m5VT-1uTjcAjWg0ZkrG9ubsdh-JXijqD7wRw";
+  const TMDB_API_KEY = "4f2329b4cc7f2305c627bca526928b82";
 
-  // Cria o "cliente" Supabase que nos permitirá interagir com o banco de dados
-  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  // --- 2. SELEÇÃO DOS ELEMENTOS DO HTML (sem alterações) ---
   const formBusca = document.getElementById("form-busca");
   const inputBusca = document.getElementById("input-busca");
   const searchResultsContainer = document.getElementById("search-results");
   const addContainer = document.getElementById("add-container");
   const formFilme = document.getElementById("form-filme");
   const inputTitulo = document.getElementById("input-titulo");
-  const inputPoster = document.getElementById("input-poster");
   const inputRating = document.getElementById("input-rating");
   const stars = document.querySelectorAll(".rating-input .star");
   const listaFilmes = document.getElementById("lista-filmes");
 
   let selectedMovieData = null;
 
-  // --- 3. LÓGICA DE INTERAÇÃO COM O BANCO DE DADOS (NOVO!) ---
-
-  // Função para buscar todos os filmes do banco de dados
   async function fetchFilmes() {
-    const { data, error } = await supabase
-      .from("filmes") // Da tabela 'filmes'
-      .select("*") // Selecione todas as colunas
-      .order("created_at", { ascending: false }); // Ordena pelos mais recentes
+    const { data, error } = await supabaseClient
+      .from("filmes")
+      .select("*")
+      .order("created_at", { ascending: false });
 
     if (error) {
       console.error("Erro ao buscar filmes:", error);
       return;
     }
-
-    // Limpa a lista atual e renderiza os filmes buscados
     listaFilmes.innerHTML = "";
     data.forEach((filme) => renderizarFilme(filme));
   }
 
-  // Função para adicionar um novo filme
   async function adicionarFilmeNaLista(event) {
     event.preventDefault();
-
     const novoFilme = {
       titulo: selectedMovieData.title,
-      poster_url: selectedMovieData.posterUrl, // Note o nome da coluna do DB
+      poster_url: selectedMovieData.posterUrl,
       rating: inputRating.value,
       detalhes: document.getElementById("input-detalhes").value.trim(),
     };
 
-    const { error } = await supabase.from("filmes").insert([novoFilme]);
+    const { error } = await supabaseClient.from("filmes").insert([novoFilme]);
 
     if (error) {
       console.error("Erro ao adicionar filme:", error);
     } else {
-      // Se deu certo, busca todos os filmes novamente para atualizar a lista
       fetchFilmes();
-      // Reseta os formulários
       formFilme.reset();
       addContainer.style.display = "none";
       searchResultsContainer.innerHTML = "";
@@ -69,20 +56,21 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  // Função para remover um filme
   async function removerFilme(filmeId) {
-    const { error } = await supabase.from("filmes").delete().eq("id", filmeId);
+    const { error } = await supabaseClient
+      .from("filmes")
+      .delete()
+      .eq("id", filmeId);
 
     if (error) {
       console.error("Erro ao remover filme:", error);
     } else {
-      fetchFilmes(); // Atualiza a lista
+      fetchFilmes();
     }
   }
 
-  // Função para salvar uma edição
   async function salvarEdicao(filmeId, novaNota, novosDetalhes) {
-    const { error } = await supabase
+    const { error } = await supabaseClient
       .from("filmes")
       .update({ rating: novaNota, detalhes: novosDetalhes })
       .eq("id", filmeId);
@@ -90,18 +78,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (error) {
       console.error("Erro ao salvar edição:", error);
     } else {
-      fetchFilmes(); // Atualiza a lista
+      fetchFilmes();
     }
   }
 
-  // --- 4. LÓGICA DE RENDERIZAÇÃO E INTERFACE (com pequenas adaptações) ---
-
-  // Função para renderizar um único filme na tela
   function renderizarFilme(filme) {
-    // Agora 'filme' é um objeto vindo diretamente do banco de dados
     const item = document.createElement("li");
     item.className = "filme-item";
-
     const posterImg = document.createElement("img");
     posterImg.className = "filme-poster";
     posterImg.src =
@@ -110,59 +93,46 @@ document.addEventListener("DOMContentLoaded", async () => {
     posterImg.onerror = function () {
       this.src = "https://via.placeholder.com/100x150.png?text=Erro";
     };
-
     const infoDiv = document.createElement("div");
     infoDiv.className = "filme-info";
-
     const ratingDiv = document.createElement("div");
     ratingDiv.className = "filme-rating";
     let ratingStars = "";
     for (let i = 1; i <= 5; i++) ratingStars += i <= filme.rating ? "★" : "☆";
     ratingDiv.textContent = ratingStars;
-
     const tituloP = document.createElement("p");
     tituloP.className = "filme-titulo";
     tituloP.textContent = filme.titulo;
-
     const detalhesP = document.createElement("p");
     detalhesP.className = "filme-detalhes";
     detalhesP.textContent = filme.detalhes;
-
     const actionsContainer = document.createElement("div");
     actionsContainer.className = "actions-container";
-
     const btnRemover = document.createElement("button");
     btnRemover.className = "btn-remover";
     btnRemover.textContent = "Remover";
-    btnRemover.addEventListener("click", () => removerFilme(filme.id)); // Usa o ID do DB
-
+    btnRemover.addEventListener("click", () => removerFilme(filme.id));
     const btnEditar = document.createElement("button");
     btnEditar.className = "btn-editar";
     btnEditar.textContent = "Editar";
-    btnEditar.addEventListener("click", () => toggleEditView(item, filme)); // Passa o objeto filme inteiro
-
+    btnEditar.addEventListener("click", () => toggleEditView(item, filme));
     actionsContainer.appendChild(btnEditar);
     actionsContainer.appendChild(btnRemover);
-
     infoDiv.appendChild(ratingDiv);
     infoDiv.appendChild(tituloP);
     infoDiv.appendChild(detalhesP);
-
     item.appendChild(posterImg);
     item.appendChild(infoDiv);
     item.appendChild(actionsContainer);
-
     listaFilmes.appendChild(item);
   }
 
-  // Função para entrar no modo de edição (adaptada)
   function toggleEditView(item, filme) {
     item.classList.add("edit-mode");
     const infoDiv = item.querySelector(".filme-info");
     const actionsContainer = item.querySelector(".actions-container");
-    infoDiv.innerHTML = ""; // Limpa para adicionar os inputs
+    infoDiv.innerHTML = "";
     actionsContainer.innerHTML = "";
-
     let newRating = filme.rating;
     const ratingInputDiv = document.createElement("div");
     ratingInputDiv.className = "rating-input";
@@ -181,36 +151,28 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
       ratingInputDiv.appendChild(star);
     }
-
     const detalhesTextarea = document.createElement("textarea");
     detalhesTextarea.className = "edit-textarea";
     detalhesTextarea.rows = 4;
     detalhesTextarea.value = filme.detalhes;
-
     infoDiv.appendChild(ratingInputDiv);
     infoDiv.appendChild(detalhesTextarea);
-
     const btnSalvar = document.createElement("button");
     btnSalvar.className = "btn-salvar";
     btnSalvar.textContent = "Salvar";
     btnSalvar.addEventListener("click", () =>
       salvarEdicao(filme.id, newRating, detalhesTextarea.value)
     );
-
     const btnCancelar = document.createElement("button");
     btnCancelar.className = "btn-cancelar";
     btnCancelar.textContent = "Cancelar";
-    btnCancelar.addEventListener("click", () => fetchFilmes()); // Apenas redesenha a lista
-
+    btnCancelar.addEventListener("click", () => fetchFilmes());
     actionsContainer.appendChild(btnSalvar);
     actionsContainer.appendChild(btnCancelar);
   }
 
-  // --- LÓGICA DE BUSCA NA API TMDB (sem alterações) ---
   async function buscarFilmesNaAPI(query) {
-    // O código desta função permanece o mesmo
     searchResultsContainer.innerHTML = "<p>Buscando...</p>";
-    const TMDB_API_KEY = "4f2329b4cc7f2305c627bca526928b82"; // Se você guardou em outro lugar, coloque aqui
     const response = await fetch(
       `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(
         query
@@ -221,7 +183,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   function exibirResultadosDaBusca(filmes) {
-    // O código desta função permanece o mesmo
     searchResultsContainer.innerHTML = "";
     filmes.forEach((filme) => {
       const resultItem = document.createElement("div");
@@ -257,7 +218,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
   formFilme.addEventListener("submit", adicionarFilmeNaLista);
   stars.forEach((star) => {
-    // Lógica das estrelas do formulário principal
     star.addEventListener("mouseover", (e) => {
       const val = e.target.dataset.value;
       stars.forEach((s) => (s.innerHTML = s.dataset.value <= val ? "★" : "☆"));
@@ -271,7 +231,5 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   });
 
-  // --- INICIALIZAÇÃO ---
-  // Busca os filmes do banco de dados assim que a página carrega
   fetchFilmes();
 });
